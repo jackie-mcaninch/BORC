@@ -37,6 +37,9 @@ void CMenuMgr::display_item()
         case MI_SETPOINT:
             Display.print("Se");
             break;
+        case MI_COMMANDLINE:
+            Display.print("Cl");
+            break;
         case MI_CALIBRATE:
             Display.print("Ca");
             break;
@@ -69,6 +72,10 @@ void CMenuMgr::dispatch()
 
         case MI_SETPOINT:
             SetpointModeMgr.start();
+            break;
+
+        case MI_COMMANDLINE:
+            CommandLineModeMgr.start();
             break;
 
         case MI_CALIBRATE:

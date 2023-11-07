@@ -94,9 +94,10 @@ void loop()
   
     switch (System.iface_mode)
     {
-      case MANUAL_MODE   : ManualModeMgr.execute();    break;
-      case MENU_MODE     : MenuMgr.execute();          break;
-      case SETPOINT_MODE : SetpointModeMgr.execute();  break;
+      case MANUAL_MODE        : ManualModeMgr.execute();      break;
+      case MENU_MODE          : MenuMgr.execute();            break;
+      case SETPOINT_MODE      : SetpointModeMgr.execute();    break;
+      case COMMANDLINE_MODE   : CommandLineModeMgr.execute(); break;
     }
 }
 //=========================================================================================================
