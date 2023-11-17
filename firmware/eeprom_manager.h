@@ -68,6 +68,8 @@ public:
         servocal_t      is_servo_calibrated;
         uint16_t        servo_min;
         uint16_t        servo_max;
+        uint16_t        fully_closed_pwm;
+        uint16_t        fully_open_pwm;
         uint8_t         notches;
         uint16_t        tcm;
         float           deadband;

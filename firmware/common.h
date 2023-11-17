@@ -35,7 +35,9 @@ enum packet_type_t  : uint8_t
 #define SLEEP_TIME_SECS 32
 
 // Misc. global variables ------------------------------------------
-#define SERIAL_BAUD               115200
+#define SERIAL_BAUD                 115200
+#define FC_CURRENT_MEDIAN_THRESHOLD 500
+#define FC_CURRENT_STDEV_THRESHOLD  300
 
 // I2C Addresses ---------------------------------------------------
 

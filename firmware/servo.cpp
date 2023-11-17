@@ -3,6 +3,7 @@
 //=========================================================================================================
 #include "globals.h"
 #include <Adafruit_PWMServoDriver.h>  //https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
+#include <QuickStats.h>
 
 // initialize all library objects
 static Adafruit_PWMServoDriver pwm(SERVO_DRIVER_ADDRESS);
@@ -207,7 +208,210 @@ cleanup:
 //=========================================================================================================
 void CServoDriver::calibrate_installed()
 {
+    // show that we're calibrating the servo on the display and LED
+    Display.print("Ca");
+    Led.set(AMBER);
+
+    // assume this is going to work
+    bool success = true;
+
+    // Switch to manual power control
+    push_power_control(MANUAL);
     
+    // add hardware check here?
+
+    // make sure calibrate_bare has been run
+    if (!ee.is_servo_calibrated) {
+        goto cleanup;
+    }
+
+    // manually turn on servo's power
+    PowerMgr.powerOn(SERVO_POWER_PIN);
+
+    // establish known limits
+    const int servo_min = ee.servo_min;
+    const int servo_max = ee.servo_max;
+    const int num_steps = 20;
+    int step_size = 10; //(int)((servo_max - servo_min)/num_steps);
+    const int num_samples = 100; // how many current readings to record
+    const int sample_period = 3; // number of seconds to collect the sample
+    
+
+    // wait for the servo to stop moving
+    wait_for_servo_to_settle();
+
+    // start from fully open
+    move_to_pwm(servo_max, 4000, true);
+
+    // move in increments
+    int current_pwm = servo_max;
+    float data[num_samples] = { };
+    float median = 0;
+    float std_dev = 310;
+    int step_inc = 10;
+    QuickStats stats;
+    // for (int i=0; i<num_steps; i++) {
+    //     // move it to next increment
+    //     move_to_pwm(current_pwm-(2*step_size), 1000, true);
+    //     Serial.println("first move complete");
+    //     move_to_pwm(current_pwm-step_size, 4000, true);
+    //     Serial.println("second move complete");
+    //     wait_for_servo_to_settle();
+    //     Serial.println("servo settled");
+    //     current_pwm -= step_size;
+
+    //     // read current for set period
+    //     for (int s=0; s<num_samples; s++) {
+    //         data[s] = (float)INA219.get_current_ma();
+    //         delay((sample_period*1000)/num_samples);
+    //         // Serial.println(data[s]);
+    //     }
+
+    //     // extract stats (median/std dev)
+    //     median = stats.median(data, num_samples);
+    //     std_dev = stats.stdev(data, num_samples);
+    //     Serial.print("Stats for step ");
+    //     Serial.println(i);
+    //     Serial.println(median);
+    //     Serial.println(std_dev);
+    //     Serial.println(current_pwm);
+
+    //     // check if fully closed
+    //     if (median > FC_CURRENT_MEDIAN_THRESHOLD && std_dev < FC_CURRENT_STDEV_THRESHOLD ) {
+    //         ee.fully_closed_pwm = current_pwm;
+    //         goto cleanup;
+    //     }
+
+    //     // determine fully closed
+        
+    // }
+    int i = 0;
+    while (median < FC_CURRENT_MEDIAN_THRESHOLD || std_dev > FC_CURRENT_STDEV_THRESHOLD )   {
+        current_pwm = servo_max-step_size;
+        move_to_pwm(current_pwm, 4000, true);
+        wait_for_servo_to_settle();
+        Serial.println("servo settled");
+
+        // read current for set period
+        for (int s=0; s<num_samples; s++) {
+            data[s] = (float)INA219.get_current_ma();
+            delay((sample_period*1000)/num_samples);
+            // Serial.println(data[s]);
+        }
+
+        // extract stats (median/std dev)
+        median = stats.median(data, num_samples);
+        std_dev = stats.stdev(data, num_samples);
+        Serial.print("Stats for step ");
+        Serial.println(i);
+        Serial.println(median);
+        Serial.println(std_dev);
+        Serial.println(current_pwm);
+
+        move_to_pwm(servo_max, 4000, true);
+
+        step_size += step_inc;
+        i += 1;
+    }
+    ee.fully_closed_pwm = current_pwm + 2;
+    goto cleanup;
+    // // start feeling for the lower limit from here
+    // int current_target = safe_lo_pwm;
+
+    // // until we find the limit..
+    // while (true)
+    // {   
+    //     // Perform current logging
+    //     CurLogger.execute();
+
+    //     // move our target down by a step
+    //     current_target -= step_size;
+
+    //     // have we failed to find the lower limit?
+    //     if (current_target <= dangerous_lo_pwm) 
+    //     {  
+    //         // then set it to default
+    //         ee.servo_min = DEFAULT_MIN_LIMIT;
+    //         success = false;
+    //         break;
+    //     }
+
+    //     // wait for the servo to stop moving from previous move
+    //     wait_for_servo_to_settle();
+
+    //     // if the movement to this target doesn't start
+    //     if (!move_to_pwm(current_target, 4000, false))
+    //     {   
+    //         // we found our lower limit
+    //         ee.servo_min = current_target + step_size;
+    //         break;
+    //     }
+    // }
+
+    // // wait for the servo to stop moving from previous move
+    // wait_for_servo_to_settle();
+
+    // // move to a safe position
+    // move_to_pwm(safe_hi_pwm, 4000, false);
+    
+    // // start feeling for the higher limit from here
+    // current_target = safe_hi_pwm;
+
+    // // until we find the limit..
+    // while (true)
+    // {   
+    //     // Perform current logging
+    //     CurLogger.execute();
+
+    //     // move our target up by a step
+    //     current_target += step_size;
+
+    //     // have we failed to find the higher limit?
+    //     if (current_target >= dangerous_hi_pwm) 
+    //     {   
+    //         // then set it to default
+    //         ee.servo_max = DEFAULT_MAX_LIMIT;
+    //         success = false;
+    //         break;
+    //     }
+
+    //     // wait for the servo to stop moving from previous move
+    //     wait_for_servo_to_settle();
+
+    //     // if the movement to this target doesn't start
+    //     if (!move_to_pwm(current_target, 4000, false))
+    //     {
+    //         // we found our upper limit
+    //         ee.servo_max = current_target - step_size;
+    //         break;
+    //     }
+    // }
+
+cleanup:
+
+    move_to_pwm(servo_max, 4000, true);
+    
+    // manually turn off servo's power
+    PowerMgr.powerOff(SERVO_POWER_PIN);
+
+    // Switch back to the previous power control setting
+    pop_power_control();
+
+    // if calibration is successful..
+    if (success)
+    {   
+        // store servo calibration status in EEPROM
+        ee.is_servo_calibrated = CAL;
+        
+        // and set output limits
+        TempCtrl.set_output_limits(ee.servo_min, ee.servo_max);
+    }
+
+    // turn LED off after calibration
+    Led.set(OFF);
+
+    // tell sleep manager that we moved the motor without his permission.. sorry!
+    SleepMgr.marked_motor_as_moved();
 }
 //=========================================================================================================
 

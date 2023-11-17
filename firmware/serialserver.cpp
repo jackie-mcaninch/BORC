@@ -72,10 +72,10 @@ bool CSerialServer::handle_servo()
 bool CSerialServer::handle_calibrate()
 {
     // Tell the user what we're doing
-    replyf("Calibrating bare servo ...");
+    replyf("Calibrating installed servo ...");
 
     // Tell the servo to run the calibration routine
-    Servo.calibrate_bare();
+    Servo.calibrate_installed();
 
     // Tell the client that all is well
     return pass();
