@@ -13,6 +13,7 @@ public:
     {
         MI_MANUAL   = 0,
         MI_SETPOINT,
+        MI_HIBERNATE,
         MI_CALIBRATE,
         MI_ROTATE_D,
         MI_ROOMTEMP,

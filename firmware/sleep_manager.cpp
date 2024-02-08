@@ -66,7 +66,15 @@ void CSleepMgr::execute_awake_mode()
     }
 
     // This is a repeating timer.  If it's expired, simulate waking from sleep
-    if (m_ctrl_timer.is_expired()) on_wakeup_from_timer();
+    if (m_ctrl_timer.is_expired()) 
+    {
+        if (System.iface_mode!=HIBERNATION_MODE)
+        {
+            on_wakeup_from_timer();
+        }
+        
+       
+    }
 
 }
 //=========================================================================================================
@@ -151,7 +159,11 @@ void CSleepMgr::execute_sleep_mode()
         }
 
         // radio, servo, blah
-        on_wakeup_from_timer();
+        if(System.iface_mode!=HIBERNATION_MODE)
+        {
+            on_wakeup_from_timer();
+        }
+        
     }
 }
 //=========================================================================================================

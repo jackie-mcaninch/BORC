@@ -97,6 +97,7 @@ void loop()
       case MANUAL_MODE   : ManualModeMgr.execute();    break;
       case MENU_MODE     : MenuMgr.execute();          break;
       case SETPOINT_MODE : SetpointModeMgr.execute();  break;
+      case HIBERNATION_MODE : HibernationModeMgr.execute();  break;
     }
 }
 //=========================================================================================================

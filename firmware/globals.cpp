@@ -10,6 +10,7 @@ CSleepMgr           SleepMgr;
 CLedMgr             Led;
 CMenuMgr            MenuMgr;
 CSetpointModeMgr    SetpointModeMgr;
+CHibernationModeMgr HibernationModeMgr;
 CSHT31              SHT31(TEMP_SENSE_ADDRESS);
 CINA219             INA219;
 CSerialServer       SerialServer;

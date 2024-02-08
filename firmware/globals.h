@@ -13,6 +13,7 @@
 #include "led_manager.h"
 #include "menu_manager.h"
 #include "setpoint_mode.h"
+#include "hibernation_mode.h"
 #include "eeprom_manager.h"
 #include "serialserver.h"
 #include "misc_small.h"
@@ -47,7 +48,7 @@ extern CCurrentLogger   CurLogger;
 extern CBattSensor      Battery;
 extern CRadio           Radio;
 extern SPIFlash         Flash;
-
+extern CHibernationModeMgr HibernationModeMgr;
 extern CEEPROM::data_t& ee;
 
 int c_to_f(float c);
