@@ -19,6 +19,7 @@
 #include "misc_small.h"
 #include "aprintf.h"
 #include "temp_ctrl.h"
+#include "pid_ctrl.h"
 #include "serial_logger.h"
 #include "is31fl3731.h"
 #include "sht31.h"
@@ -43,6 +44,7 @@ extern CSerialServer        SerialServer;
 extern CUSBSensor           USB;
 extern CEEPROM              EEPROM;
 extern CNotchController     TempCtrl;
+extern CPidController       PidCtrl;
 extern CSerialLogger        Logger;
 extern CINA219              INA219;
 extern CCurrentLogger       CurLogger;
