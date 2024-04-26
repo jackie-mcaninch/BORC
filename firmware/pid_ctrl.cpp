@@ -3,8 +3,8 @@
 //=========================================================================================================
 #include "globals.h"
 
-#define	IMPLEMENTATION FIFO
 #define HIST_THRESHOLD 100
+#define CLIMB_EXPIRATION_SECS 1200 // 20 mins in between checks
 
 
 struct history_point
@@ -14,7 +14,7 @@ struct history_point
     uint32_t timestamp;
 };
 
-CPidController::CPidController() : m_history(sizeof(history_point), HIST_THRESHOLD, IMPLEMENTATION, true) {}
+CPidController::CPidController() : m_history(sizeof(history_point), HIST_THRESHOLD, FIFO, true) {}
 
 void CPidController::init()
 {
@@ -31,8 +31,13 @@ void CPidController::reset()
     m_timer = 0;
     m_last_action_ts = 0;
 
-    // clear queues
-    m_history.flush()
+    // clear queue
+    m_history.flush();
+}
+
+void CPidController::set_notch_count(uint8_t value)
+{
+    m_notch_count = value;
 }
 
 bool CPidController::enqueue_history_point(float temp_pt, uint8_t notch_pt)
@@ -41,14 +46,44 @@ bool CPidController::enqueue_history_point(float temp_pt, uint8_t notch_pt)
     return m_history.push(&hp);
 }
 
-temp_ctrl_mode_t CPidController::switch_control_mode(float curr_temp)
+temp_ctrl_mode_t CPidController::switch_control_mode(float curr_temp, float l_bound, float u_bound)
 {
-    // keep it simple for testing purposes first
+    // compute the time elapsed since last action
+    uint32_t time_since_last_action = m_timer - m_last_action_ts;
+    
+    switch (m_current_mode) {
+        case CLIMB_MODE:
+            // test if our climb timer has expired
+            if (time_since_last_action > CLIMB_EXPIRATION_SECS) {
+                // now we can see whether to switch to another mode
+                return curr_temp > u_bound ? REST_MODE : CLIMB_MODE;
+                
+            }
+            // if timer hasn't expired yet, stay in climb mode
+            else { return CLIMB_MODE; }
+        
+        case PID_MODE:
+            break;
 
+        case ECO_MODE:
+            break;
+
+        case WAIT_MODE:
+            break;
+
+        case REST_MODE:
+            // we should always be in rest mode unless temp drops too much
+            return curr_temp < l_bound ? CLIMB_MODE : REST_MODE;
+
+        default:
+            // log something went wrong here
+            break;
+    }
+    return REST_MODE;
 
 }
 
-uint8_t CPidController::get_new_notch_pos(float curr_temp, uint8_t curr_notch, uint32_t dt)
+uint8_t CPidController::get_new_notch_pos(float curr_temp, float l_bound, float u_bound, uint8_t curr_notch, uint32_t dt)
 {
     // get the current time
     m_timer += dt;
