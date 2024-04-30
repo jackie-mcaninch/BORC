@@ -17,6 +17,7 @@ CSerialServer       SerialServer;
 CUSBSensor          USB;
 CEEPROM             EEPROM;
 CNotchController    TempCtrl;
+CPidController      PidCtrl;
 CSerialLogger       Logger;
 CCurrentLogger      CurLogger;
 CBattSensor         Battery;

@@ -46,6 +46,7 @@ void setup()
 
     // Initilize the Temperature controller
     TempCtrl.init();
+    PidCtrl.init();
 
     // restore the system orientation from EEPROM
     System.set_orientation(ee.orientation);

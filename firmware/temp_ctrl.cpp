@@ -169,17 +169,18 @@ bool CNotchController::compute(nc_pv_t pv_c, nc_time_t dt, nc_out_t* p_output)
     }
 
 
-    // If the pv is too low and we have room to move the output up a notch, do so
-    if (pv_c < m_lower_boundary && m_current_notch < m_MAX_NOTCH)
-    {
-        *p_output = m_notch_value[++m_current_notch];
-    }
+    // // If the pv is too low and we have room to move the output up a notch, do so
+    // if (pv_c < m_lower_boundary && m_current_notch < m_MAX_NOTCH)
+    // {
+    //     *p_output = m_notch_value[++m_current_notch];
+    // }
 
-    // If the pv is too high and we have room to bump the output down a notch, do so
-    else if (pv_c > m_upper_boundary && m_current_notch > 0)
-    {
-        *p_output = m_notch_value[--m_current_notch];
-    }
+    // // If the pv is too high and we have room to bump the output down a notch, do so
+    // else if (pv_c > m_upper_boundary && m_current_notch > 0)
+    // {
+    //     *p_output = m_notch_value[--m_current_notch];
+    // }
+    *p_output = m_notch_value[PidCtrl.get_new_notch_pos_pid(pv_c, m_current_notch, m_lower_boundary, m_upper_boundary)]
 
 cleanup:
 
