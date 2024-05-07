@@ -66,7 +66,11 @@ void CSleepMgr::execute_awake_mode()
     }
 
     // This is a repeating timer.  If it's expired, simulate waking from sleep
-    if (m_ctrl_timer.is_expired()) on_wakeup_from_timer();
+    if (m_ctrl_timer.is_expired()) {
+        Serial.print("here");
+        on_wakeup_from_timer();
+    }
+    
 
 }
 //=========================================================================================================

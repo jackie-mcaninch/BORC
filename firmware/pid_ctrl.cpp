@@ -23,11 +23,9 @@ void CPidController::init()
     m_timer = 0;
     m_last_action_ts = 0;
     // Gain values require tuning
-    double Kp = 0.5; // Proportional gain
-    double Ki = 0.1; // Integral gain
-    double Kd = 0.01; // Derivative gain
-    double integral;
-    double prev_error;
+    Kp = 0.5; // Proportional gain
+    Ki = 0.1; // Integral gain
+    Kd = 0.01; // Derivative gain
 }
 
 void CPidController::reset()
@@ -91,7 +89,7 @@ temp_ctrl_mode_t CPidController::switch_control_mode(float curr_temp, float l_bo
 
 uint8_t CPidController::get_new_notch_pos_pid(float curr_temp, uint8_t curr_notch, float l_bound, float u_bound)
 {
-        float desired_temp = (l_bound + u_bound)/2 
+        float desired_temp = (l_bound + u_bound)/2;
         double error = desired_temp - curr_temp;
 
         // Proportional term
@@ -106,13 +104,18 @@ uint8_t CPidController::get_new_notch_pos_pid(float curr_temp, uint8_t curr_notc
 
         // Calculate new notch
         double pid_output = p_term + i_term + d_term;
-        uint8_t new_notch = (uint8_t)(pid_output * CNotchController.MAX_NOTCHES/2 + curr_notch)
-        new_notch = std::max(0, std::min(CNotchController.MAX_NOTCHES, new_notch));
+        Serial.println("PID output:");
+        Serial.println(pid_output);
+        Serial.println("Current notch:");
+        Serial.println(curr_notch);
+        float new_notch = (float)(pid_output * (TempCtrl.MAX_NOTCHES-1)/2 + curr_notch);
+        Serial.println(new_notch);
+        new_notch = max(0, min(TempCtrl.MAX_NOTCHES-1, new_notch));
 
         // Save current error for next iteration
         prev_error = error;
 
-        return new_notch;
+        return (uint8_t)new_notch;
 }
 
 uint8_t CPidController::get_new_notch_pos(float curr_temp, float l_bound, float u_bound, uint8_t curr_notch, uint32_t dt)
@@ -138,7 +141,7 @@ uint8_t CPidController::get_new_notch_pos(float curr_temp, float l_bound, float 
 
         // PID: we are in range of setpoint, use PID temperature control to find optimal position
         case PID_MODE:
-            new_notch_pos = get_new_notch_pos_pid(curr_temp, curr_notch);
+            new_notch_pos = get_new_notch_pos_pid(curr_temp, curr_notch, l_bound, u_bound);
             break;
 
         // ECO: we are in deadband but want to save power, keep notch the same for time period
@@ -162,7 +165,7 @@ uint8_t CPidController::get_new_notch_pos(float curr_temp, float l_bound, float 
     }
 
     // see if we need to switch between modes
-    m_current_mode = switch_control_mode(curr_temp);
+    m_current_mode = switch_control_mode(curr_temp, l_bound, u_bound);
 
     // return the resulting notch to travel to
     return new_notch_pos;

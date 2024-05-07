@@ -86,13 +86,16 @@ void loop()
     wdt_reset(); //pat the dog...
 
     USB.execute();
-
+    // Serial.println("USB");
     SerialServer.execute();
+    // Serial.println("SerialServer");
 
     SleepMgr.execute();
+    // Serial.println("SM");
 
     Led.execute();
-  
+    // Serial.println("LGBT light");
+
     switch (System.iface_mode)
     {
       case MANUAL_MODE        : ManualModeMgr.execute();      break;

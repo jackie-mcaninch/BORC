@@ -150,22 +150,23 @@ bool CNotchController::compute(nc_pv_t pv_c, nc_time_t dt, nc_out_t* p_output)
     // If we're in ramping mode...
     if (m_current_notch == RAMPING)
     {
-        // If the temperature is too low, turn the output all the way on
-        if (pv_c < m_lower_boundary)
-        {
-            m_current_notch = m_MAX_NOTCH;
-            *p_output = m_notch_value[m_current_notch];
-        }
+        m_current_notch = 0;
+        // // If the temperature is too low, turn the output all the way on
+        // if (pv_c < m_lower_boundary)
+        // {
+        //     m_current_notch = m_MAX_NOTCH;
+        //     *p_output = m_notch_value[m_current_notch];
+        // }
 
-        // If the temperatue is too high, turn the output all the way off
-        else if (pv_c > m_upper_boundary)
-        {
-            m_current_notch = 0;
-            *p_output = m_notch_value[m_current_notch];
-        }
+        // // If the temperatue is too high, turn the output all the way off
+        // else if (pv_c > m_upper_boundary)
+        // {
+        //     m_current_notch = 0;
+        //     *p_output = m_notch_value[m_current_notch];
+        // }
 
-        // We're done managing ramping
-        goto cleanup;
+        // // We're done managing ramping
+        // goto cleanup;
     }
 
 
@@ -180,7 +181,10 @@ bool CNotchController::compute(nc_pv_t pv_c, nc_time_t dt, nc_out_t* p_output)
     // {
     //     *p_output = m_notch_value[--m_current_notch];
     // }
-    *p_output = m_notch_value[PidCtrl.get_new_notch_pos_pid(pv_c, m_current_notch, m_lower_boundary, m_upper_boundary)]
+    uint8_t result = PidCtrl.get_new_notch_pos_pid(pv_c, m_current_notch, m_lower_boundary, m_upper_boundary);
+    Serial.print("Result: ");
+    Serial.println(result);
+    *p_output = m_notch_value[result];
 
 cleanup:
 

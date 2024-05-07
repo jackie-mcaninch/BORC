@@ -37,6 +37,12 @@ private:
     uint32_t m_last_action_ts;
 
     cppQueue m_history;
+    double Kp = 0.5; // Proportional gain
+    double Ki = 0.1; // Integral gain
+    double Kd = 0.01; // Derivative gain
+    double integral;
+    double prev_error;
+
 };
 
 #endif
